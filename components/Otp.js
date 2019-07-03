@@ -1,4 +1,5 @@
 import React from "react";
+import PinInput from 'react-pin-input';
 
 class Otp extends React.Component {
 
@@ -20,6 +21,17 @@ class Otp extends React.Component {
         </section>
         <section>
           <label htmlFor="">رمز یکبار مصرف</label>
+          <PinInput
+            length={4}
+            initialValue=""
+            secret
+            onChange={(value, index) => {console.log('has changed', value, index);}}
+            type="numeric"
+            style={{padding: '10px'}}
+            inputStyle={{borderColor: 'red'}}
+            inputFocusStyle={{borderColor: 'blue'}}
+            onComplete={(value, index) => {console.log('completed', value, index);}}
+          />
         </section>
         <section>
           <button>

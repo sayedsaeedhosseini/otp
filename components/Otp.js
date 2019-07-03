@@ -1,14 +1,69 @@
 import React from "react";
 import PinInput from 'react-pin-input';
+import { getOtpCode, submitOtpCode } from '../utils/api_helper';
+import { PulseLoader } from 'react-spinners';
 
 class Otp extends React.Component {
 
-  constructor(props, context) {
-    super(props, context);
-    this.state = {};
+  static phoneNumberValidate (phone) {
+    const path = /^((0)[0-9]{10})$/g;
+    return path.test(phone);
   }
 
+  constructor(props, context) {
+    super(props, context);
+    this.state = {
+      phone: null,
+      hasError: null,
+      isOtpRequestLoading: false,
+      otpRequestRespond: null,
+    };
+  }
+
+  onOtpRequest = async() => {
+    const { phone } = this.state;
+    this.setState({
+      hasError: null,
+      otpRequestRespond: null,
+      isOtpRequestLoading: true,
+    });
+    if(Otp.phoneNumberValidate(phone)) {
+      const otpRequested = await getOtpCode(phone);
+      if(otpRequested.ok) {
+        this.setState({
+          otpRequestRespond: otpRequested.data,
+          isOtpRequestLoading: false,
+        })
+      } else {
+        this.setState({
+          hasError: otpRequested.data.notification.message,
+          isOtpRequestLoading: false,
+        });
+      }
+    } else {
+      this.setState({
+        isOtpRequestLoading: false,
+        hasError: 'لطقا شماره تلفن همراه معتبر وارد نمایید',
+      });
+    }
+  };
+
+  onSubmitCode = async() => {
+    const codeSubmitted = await submitOtpCode('09123063855', '5597');
+    console.log('------- codeSubmitted logging ------');
+    console.log(codeSubmitted);
+    console.log('------- end ------');
+  };
+
   render() {
+    const {
+      hasError,
+      otpRequestRespond,
+      isOtpRequestLoading,
+    } =this.state;
+    console.log('------- this logging ------');
+    console.log(this);
+    console.log('------- end ------');
     return (
       <div>
         <section>
@@ -17,33 +72,52 @@ class Otp extends React.Component {
             <p>ابتدا شماره تلفن همراه خود را وارد کنید، سپس رمز یکبار مصرف را برای تایید شماره جهت ورود وارد کنید.</p>
           </div>
           <label htmlFor="phoneNumber">شماره تلفن همراه</label>
-          <input id="phoneNumber" placeholder="مثلا: ۰۹۱۲۳۰۶۳۸۵۵" />
+          <input
+            onChange={(e) => this.setState({ phone: e.target.value })}
+            id="phoneNumber"
+            placeholder="مثلا: ۰۹۱۲۳۰۶۳۸۵۵"
+          />
         </section>
         <section>
           <label htmlFor="">رمز یکبار مصرف</label>
           <PinInput
-            length={4}
-            initialValue=""
-            secret
+            length={6}
             onChange={(value, index) => {console.log('has changed', value, index);}}
             type="numeric"
-            style={{padding: '10px'}}
-            inputStyle={{borderColor: 'red'}}
-            inputFocusStyle={{borderColor: 'blue'}}
             onComplete={(value, index) => {console.log('completed', value, index);}}
           />
         </section>
         <section>
-          <button>
-            دریافت کد
-          </button>
-          <button>
-            دریافت مجدد کد
-          </button>
-          <button>
-            ورود
-          </button>
+          {
+            otpRequestRespond === null &&
+            <button onClick={this.onOtpRequest}>
+              دریافت کد
+              <PulseLoader
+                sizeUnit={"px"}
+                size={10}
+                color={'#123abc'}
+                loading = {isOtpRequestLoading}
+              />
+            </button>
+          }
+          {
+            otpRequestRespond &&
+              <div>
+                <button onClick={this.onOtpRequest}>
+                  دریافت مجدد کد
+                </button>
+                <button onClick={this.onSubmitCode}>
+                  ورود
+                </button>
+              </div>
+          }
         </section>
+        {
+          !!hasError &&
+          <section>
+            <p>{ hasError }</p>
+          </section>
+        }
       </div>
     );
   }

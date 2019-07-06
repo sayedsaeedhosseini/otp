@@ -1,7 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import withStyles from 'isomorphic-style-loader/lib/withStyles';
-import s from './SvgPieTimer.css';
+// import withStyles from 'isomorphic-style-loader/withStyles';
+import s from './SvgPieTimer.scss';
 
 class SvgPieTimer extends React.Component {
 
@@ -156,4 +156,4 @@ class SvgPieTimer extends React.Component {
   }
 }
 
-export default withStyles(s)(SvgPieTimer);
+export default SvgPieTimer;

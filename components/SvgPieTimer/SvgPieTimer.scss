@@ -1,4 +1,4 @@
-@import '../../components/variables.css';
+//@import '../../components/variables.css';
 
 .pie-timer {
   display: inline-block;
@@ -9,16 +9,16 @@
 }
 
 .svg {
-  background-color: var(--razzmatazz);
+  background-color: red;
   border-radius: 100%;
-  box-shadow: 0 0 0 0.1rem var(--brigthest) inset, 0 0 0 0.1rem var(--brigthest) inset, 0 0 0 0.1rem var(--brigthest) inset;
+  box-shadow: 0 0 0 0.1rem white inset, 0 0 0 0.1rem white inset, 0 0 0 0.1rem white inset;
   vertical-align: middle;
 }
 
 .svg-loader {
-  fill: var(--gray-700);
+  fill: darkgray;
 }
 
 .svg-border {
-  fill: var(--brigthest);
+  fill: white;
 }

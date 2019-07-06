@@ -2,6 +2,7 @@ import React from "react";
 import PinInput from 'react-pin-input';
 import { getOtpCode, submitOtpCode } from '../utils/api_helper';
 import { PulseLoader } from 'react-spinners';
+import SvgPieTimer from '../components/SvgPieTimer/SvgPieTimer';
 
 class Otp extends React.Component {
 
@@ -105,6 +106,14 @@ class Otp extends React.Component {
               <div>
                 <button onClick={this.onOtpRequest}>
                   دریافت مجدد کد
+                  <SvgPieTimer
+                    height={20}
+                    width={20}
+                    duration={4000}
+                    loops={1}
+                    reverse={false}
+                    inverse={false}
+                  />
                 </button>
                 <button onClick={this.onSubmitCode}>
                   ورود

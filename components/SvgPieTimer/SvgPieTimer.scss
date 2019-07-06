@@ -1,0 +1,24 @@
+@import '../../components/variables.css';
+
+.pie-timer {
+  display: inline-block;
+  position: absolute;
+  top: 50%;
+  margin-top: -1.2rem;
+  right: 1.3rem;
+}
+
+.svg {
+  background-color: var(--razzmatazz);
+  border-radius: 100%;
+  box-shadow: 0 0 0 0.1rem var(--brigthest) inset, 0 0 0 0.1rem var(--brigthest) inset, 0 0 0 0.1rem var(--brigthest) inset;
+  vertical-align: middle;
+}
+
+.svg-loader {
+  fill: var(--gray-700);
+}
+
+.svg-border {
+  fill: var(--brigthest);
+}

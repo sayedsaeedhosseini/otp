@@ -16,9 +16,11 @@ class Otp extends React.Component {
     this.state = {
       phone: null,
       hasError: null,
-      isOtpRequestLoading: false,
+      otpCode: null,
       otpRequestRespond: null,
+      isOtpRequestLoading: false,
       isOtpResendButtonActive: false,
+      isOtpSubmittedLoading: false,
     };
     this.resendButtonTimeout = null;
   }
@@ -39,6 +41,7 @@ class Otp extends React.Component {
     const { phone } = this.state;
     this.setState({
       hasError: null,
+      otpCode: null,
       otpRequestRespond: null,
       isOtpRequestLoading: true,
       isOtpResendButtonActive: false,
@@ -65,10 +68,40 @@ class Otp extends React.Component {
   };
 
   onSubmitCode = async() => {
-    const codeSubmitted = await submitOtpCode('09123063855', '5597');
-    console.log('------- codeSubmitted logging ------');
-    console.log(codeSubmitted);
-    console.log('------- end ------');
+    const {
+      phone,
+      otpCode,
+      otpRequestRespond,
+    } = this.state;
+    this.setState({
+      hasError: null,
+      isOtpSubmittedLoading: true,
+    });
+    if (otpCode.length === otpRequestRespond.data.charCount) {
+      const codeSubmitted = await submitOtpCode(phone, otpCode);
+      console.log('------- codeSubmitted logging ------');
+      console.log(codeSubmitted);
+      console.log('------- end ------');
+      if(codeSubmitted.ok) {
+        this.setState({
+          isOtpSubmittedLoading: false,
+        }, this.OtpSubmitted);
+      } else {
+        this.setState({
+          hasError: codeSubmitted.data.notification.message,
+          isOtpSubmittedLoading: false,
+        });
+      }
+    } else {
+      this.setState({
+        isOtpSubmittedLoading: false,
+        hasError: 'لطقا رمز یکبار مصرف را صحیح وارد نمایید.',
+      });
+    }
+  };
+
+  OtpSubmitted = () => {
+    console.log('-------  It`s redirecting ------');
   };
 
   onPhoneNumberChanged = (e) => {
@@ -76,6 +109,7 @@ class Otp extends React.Component {
       hasError: null,
       otpRequestRespond: null,
       isOtpResendButtonActive: false,
+      otpCode: null,
       phone: e.target.value,
     });
   };
@@ -86,6 +120,7 @@ class Otp extends React.Component {
       otpRequestRespond,
       isOtpRequestLoading,
       isOtpResendButtonActive,
+      isOtpSubmittedLoading,
     } = this.state;
     console.log('------- this logging ------');
     console.log(this);
@@ -110,9 +145,8 @@ class Otp extends React.Component {
             <label htmlFor="">رمز یکبار مصرف</label>
             <PinInput
               length={otpRequestRespond.data.charCount}
-              onChange={(value, index) => {console.log('has changed', value, index);}}
+              onChange={(value) => {this.setState({ otpCode: value, hasError: null })}}
               type={otpRequestRespond.data.charType === 'DIGIT' ? 'numeric' : 'custom'}
-              onComplete={(value, index) => {console.log('completed', value, index);}}
             />
           </section>
         }
@@ -150,6 +184,12 @@ class Otp extends React.Component {
                   onClick={this.onSubmitCode}
                 >
                   ورود
+                  <PulseLoader
+                    sizeUnit={"px"}
+                    size={10}
+                    color={'#123abc'}
+                    loading = {isOtpSubmittedLoading}
+                  />
                 </button>
               </div>
           }

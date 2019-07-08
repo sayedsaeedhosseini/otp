@@ -88,7 +88,7 @@ class Otp extends React.Component {
         }, this.OtpSubmitted);
       } else {
         this.setState({
-          hasError: codeSubmitted.data.notification.message,
+          hasError: codeSubmitted.data.notification.message || 'متاسفانه خطایی پیش آمده است. مجدد تلاش کنید.',
           isOtpSubmittedLoading: false,
         });
       }

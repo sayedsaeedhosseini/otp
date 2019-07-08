@@ -18,8 +18,22 @@ class Otp extends React.Component {
       hasError: null,
       isOtpRequestLoading: false,
       otpRequestRespond: null,
+      isOtpResendButtonActive: false,
     };
+    this.resendButtonTimeout = null;
   }
+
+  componentWillUnmount() {
+    clearTimeout(this.resendButtonTimeout);
+  }
+
+  activeResendOtpButton = () => {
+    this.resendButtonTimeout = setTimeout(() => {
+      this.setState({
+        isOtpResendButtonActive: true,
+      });
+    }, this.state.otpRequestRespond.data.cooldownDuration * 1000)
+  };
 
   onOtpRequest = async() => {
     const { phone } = this.state;
@@ -27,6 +41,7 @@ class Otp extends React.Component {
       hasError: null,
       otpRequestRespond: null,
       isOtpRequestLoading: true,
+      isOtpResendButtonActive: false,
     });
     if(Otp.phoneNumberValidate(phone)) {
       const otpRequested = await getOtpCode(phone);
@@ -34,7 +49,7 @@ class Otp extends React.Component {
         this.setState({
           otpRequestRespond: otpRequested.data,
           isOtpRequestLoading: false,
-        })
+        }, this.activeResendOtpButton);
       } else {
         this.setState({
           hasError: otpRequested.data.notification.message,
@@ -56,12 +71,22 @@ class Otp extends React.Component {
     console.log('------- end ------');
   };
 
+  onPhoneNumberChanged = (e) => {
+    this.setState({
+      hasError: null,
+      otpRequestRespond: null,
+      isOtpResendButtonActive: false,
+      phone: e.target.value,
+    });
+  };
+
   render() {
     const {
       hasError,
       otpRequestRespond,
       isOtpRequestLoading,
-    } =this.state;
+      isOtpResendButtonActive,
+    } = this.state;
     console.log('------- this logging ------');
     console.log(this);
     console.log('------- end ------');
@@ -74,20 +99,23 @@ class Otp extends React.Component {
           </div>
           <label htmlFor="phoneNumber">شماره تلفن همراه</label>
           <input
-            onChange={(e) => this.setState({ phone: e.target.value })}
+            onChange={(e) => this.onPhoneNumberChanged(e)}
             id="phoneNumber"
             placeholder="مثلا: ۰۹۱۲۳۰۶۳۸۵۵"
           />
         </section>
-        <section>
-          <label htmlFor="">رمز یکبار مصرف</label>
-          <PinInput
-            length={6}
-            onChange={(value, index) => {console.log('has changed', value, index);}}
-            type="numeric"
-            onComplete={(value, index) => {console.log('completed', value, index);}}
-          />
-        </section>
+        {
+          otpRequestRespond &&
+          <section>
+            <label htmlFor="">رمز یکبار مصرف</label>
+            <PinInput
+              length={otpRequestRespond.data.charCount}
+              onChange={(value, index) => {console.log('has changed', value, index);}}
+              type={otpRequestRespond.data.charType === 'DIGIT' ? 'numeric' : 'custom'}
+              onComplete={(value, index) => {console.log('completed', value, index);}}
+            />
+          </section>
+        }
         <section>
           {
             otpRequestRespond === null &&
@@ -104,18 +132,23 @@ class Otp extends React.Component {
           {
             otpRequestRespond &&
               <div>
-                <button onClick={this.onOtpRequest}>
+                <button
+                  onClick={this.onOtpRequest}
+                  disabled={isOtpResendButtonActive ? false : 'disabled'}
+                >
                   دریافت مجدد کد
                   <SvgPieTimer
                     height={20}
                     width={20}
-                    duration={4000}
+                    duration={otpRequestRespond.data.cooldownDuration*1000}
                     loops={1}
                     reverse={false}
                     inverse={false}
                   />
                 </button>
-                <button onClick={this.onSubmitCode}>
+                <button
+                  onClick={this.onSubmitCode}
+                >
                   ورود
                 </button>
               </div>

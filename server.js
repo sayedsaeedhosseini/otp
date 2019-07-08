@@ -14,6 +14,11 @@ app
       app.render(req, res, actualPage)
     });
 
+    server.get('/list', (req, res) => {
+      const actualPage = '/listing';
+      app.render(req, res, actualPage)
+    });
+
     server.get('*', (req, res) => {
       return handle(req, res)
     });

@@ -2,12 +2,21 @@ import React from "react";
 import Layout from '../components/Layout.js';
 
 function listing(result) {
-  console.log('------- respond logging ------');
-  console.log(result);
-  console.log('------- end ------');
   return (
     <Layout>
-      this is listing
+      {
+        (result && result.ok) &&
+        result.data.data.map(
+          (item) => <p key={item._id}>{item.name}</p>
+        )
+      }
+      {
+        (result && !result.ok) &&
+        <p>
+          مشکلی پیش آمده است نازنینم.
+          {result.data.notification.message}
+        </p>
+      }
     </Layout>
   )
 }

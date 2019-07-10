@@ -3,6 +3,7 @@ import PinInput from 'react-pin-input';
 import { getOtpCode, submitOtpCode } from '../utils/api_helper';
 import { PulseLoader } from 'react-spinners';
 import SvgPieTimer from '../components/SvgPieTimer/SvgPieTimer';
+import Router from "next/dist/client/router";
 
 class Otp extends React.Component {
 
@@ -23,6 +24,16 @@ class Otp extends React.Component {
       isOtpSubmittedLoading: false,
     };
     this.resendButtonTimeout = null;
+  }
+
+  componentDidMount() {
+    const isUserLoggedIN = !!sessionStorage.getItem('accessToken');
+    if (isUserLoggedIN) {
+      Router.push({
+        pathname: '/list',
+      });
+      window.location.href = '/list';
+    }
   }
 
   componentWillUnmount() {
@@ -54,10 +65,17 @@ class Otp extends React.Component {
           isOtpRequestLoading: false,
         }, this.activeResendOtpButton);
       } else {
-        this.setState({
-          hasError: otpRequested.data.notification.message,
-          isOtpRequestLoading: false,
-        });
+        if(otpRequested.status >= 500) {
+          this.setState({
+            hasError: 'مشکلی در بر قراری ارتباط با سرور پیش آمده است. لطفا مجدد تلاش کنید.',
+            isOtpRequestLoading: false,
+          });
+        } else {
+          this.setState({
+            hasError: otpRequested.data.notification.message,
+            isOtpRequestLoading: false,
+          });
+        }
       }
     } else {
       this.setState({
@@ -79,18 +97,22 @@ class Otp extends React.Component {
     });
     if (otpCode.length === otpRequestRespond.data.charCount) {
       const codeSubmitted = await submitOtpCode(phone, otpCode);
-      console.log('------- codeSubmitted logging ------');
-      console.log(codeSubmitted);
-      console.log('------- end ------');
       if(codeSubmitted.ok) {
         this.setState({
           isOtpSubmittedLoading: false,
-        }, this.OtpSubmitted);
+        }, () => this.OtpSubmitted(codeSubmitted.data));
       } else {
-        this.setState({
-          hasError: codeSubmitted.data.notification.message || 'متاسفانه خطایی پیش آمده است. مجدد تلاش کنید.',
-          isOtpSubmittedLoading: false,
-        });
+        if(codeSubmitted.status >= 500) {
+          this.setState({
+            hasError: 'مشکلی در بر قراری ارتباط با سرور پیش آمده است. لطفا مجدد تلاش کنید.',
+            isOtpSubmittedLoading: false,
+          });
+        } else {
+          this.setState({
+            hasError: codeSubmitted.data.notification.message,
+            isOtpSubmittedLoading: false,
+          });
+        }
       }
     } else {
       this.setState({
@@ -100,8 +122,14 @@ class Otp extends React.Component {
     }
   };
 
-  OtpSubmitted = () => {
-    console.log('-------  It`s redirecting ------');
+  OtpSubmitted = (userData) => {
+    console.log('------- userData logging ------');
+    console.log(userData);
+    console.log('------- end ------');
+    sessionStorage.setItem('accessToken', userData.data.oAuth2.accessToken);
+    Router.push({
+      pathname: '/list',
+    });
   };
 
   onPhoneNumberChanged = (e) => {
@@ -122,9 +150,6 @@ class Otp extends React.Component {
       isOtpResendButtonActive,
       isOtpSubmittedLoading,
     } = this.state;
-    console.log('------- this logging ------');
-    console.log(this);
-    console.log('------- end ------');
     return (
       <div>
         <section>
